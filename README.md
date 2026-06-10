@@ -1,19 +1,16 @@
-# :earth_americas: GDP dashboard template
+# 🌍 Aexis Sentinel
 
-A simple Streamlit app showing the GDP of different countries in the world.
+An autonomous, AI-driven infrastructure protection engine built to ensure zero-downtime security for critical medical and network systems.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://aexis-sentinel-uluk3u8e5mhto8zmatpc55.streamlit.app/?embed=true)
 
-### How to run it on your own machine
+### 🚀 Key Features
+* **Autonomous Threat Detection:** Real-time monitoring for critical infrastructure.
+* **Medical Network Protection:** Specialized security guardrails for healthcare systems.
+* **Zero-Downtime Architecture:** Built to keep essential services online 24/7.
 
-1. Install the requirements
+### 🛠️ How to run it locally
 
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+1. Install the dependencies:
+```bash
+pip install -r requirements.txt
