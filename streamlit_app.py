@@ -1,151 +1,138 @@
 import streamlit as st
 import pandas as pd
 import math
-from pathlib import Path
+import random
+import datetime
 
-# Set the title and favicon that appear in the Browser's tab bar.
+# ==============================================================================
+# 1. EMULATED THREAT INTELLIGENCE ENGINE CONFIGURATION
+# ==============================================================================
 st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+    page_title='Aexis Global Threat Matrix',
+    page_icon='🌐',
+    layout="wide"
 )
-
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
 
 @st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
-
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
+def generate_synthetic_threat_data():
+    """Autonomously compiles global threat intelligence matrices.
+    Simulates malicious payload events captured across international country nodes.
     """
+    countries = ['USA', 'DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN', 'NGA', 'IND', 'CAN']
+    years = list(range(2018, 2027))
+    
+    data_records = []
+    for country in countries:
+        # Assign a baseline malicious traffic profile per country
+        base_threat_multiplier = random.randint(15, 85)
+        for year in years:
+            # Generate fluctuating threat metrics (Simulated Attack Volume in Millions)
+            yearly_variance = random.randint(-10, 25)
+            attack_volume = max(5, base_threat_multiplier + (year - 2018) * 4 + yearly_variance)
+            
+            data_records.append({
+                'Country Code': country,
+                'Year': year,
+                'Threat Level (M)': attack_volume
+            })
+            
+    return pd.DataFrame(data_records)
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+threat_df = generate_synthetic_threat_data()
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+# ==============================================================================
+# 2. DASHBOARD BRANDING LAYER
+# ==============================================================================
+st.title("🌐 Aexis Sentinel: Global Threat Matrix")
+st.caption("International Cybersecurity Intelligence | Autonomous Traffic Anomaly Tracker")
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
+st.markdown(
+    """
+    This control interface tracks and monitors international malicious payload vectors, database injection frequencies, 
+    and systemic botnet anomalies captured by offline **Aexis Sentinel** perimeter defenses.
+    """
+)
+st.write("---")
+
+# ==============================================================================
+# 3. INTERACTIVE CONTROL CORNER
+# ==============================================================================
+min_year = int(threat_df['Year'].min())
+max_year = int(threat_df['Year'].max())
+
+col_controls_1, col_controls_2 = st.columns(2)
+
+with col_controls_1:
+    from_year, to_year = st.slider(
+        'Select Temporal Observation Window (Years):',
+        min_value=min_year,
+        max_value=max_year,
+        value=[min_year, max_year]
     )
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+with col_controls_2:
+    all_countries = threat_df['Country Code'].unique()
+    selected_countries = st.multiselect(
+        'Isolate Specific International Infrastructure Nodes:',
+        all_countries,
+        ['USA', 'DEU', 'FRA', 'GBR', 'JPN', 'NGA']
+    )
 
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
+# Filter the dataset dynamically based on selections
+filtered_threat_df = threat_df[
+    (threat_df['Country Code'].isin(selected_countries))
+    & (threat_df['Year'] <= to_year)
+    & (from_year <= threat_df['Year'])
 ]
 
-st.header('GDP over time', divider='gray')
+st.write("---")
 
-''
+# ==============================================================================
+# 4. GLOBAL THREAT VISUALIZATION PIPELINE
+# ==============================================================================
+st.subheader('📈 Vector Density Distribution Over Time', divider='red')
 
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
+if not selected_countries:
+    st.warning("Please isolate at least one country node for intelligence matrix analysis.")
+else:
+    st.line_chart(
+        filtered_threat_df,
+        x='Year',
+        y='Threat Level (M)',
+        color='Country Code',
+    )
 
-''
-''
+st.write("---")
 
+# ==============================================================================
+# 5. CYBER-VOLATILITY METRICS MATRIX
+# ==============================================================================
+st.subheader(f'🛡️ Live Node Threat Footprint ({to_year})', divider='red')
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
+first_year_df = threat_df[threat_df['Year'] == from_year]
+last_year_df = threat_df[threat_df['Year'] == to_year]
 
-st.header(f'GDP in {to_year}', divider='gray')
+metric_cols = st.columns(4)
 
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
+for idx, country in enumerate(selected_countries):
+    col = metric_cols[idx % len(metric_cols)]
+    
     with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+        # Extract threat levels safely
+        try:
+            first_val = first_year_df[first_year_df['Country Code'] == country]['Threat Level (M)'].iat[0]
+            last_val = last_year_df[last_year_df['Country Code'] == country]['Threat Level (M)'].iat[0]
+            
+            growth_factor = f'{last_val / first_val:,.2f}x'
+            delta_label = f"Volatility Scaling vs {from_year}"
+        except IndexError:
+            last_val = 0
+            growth_factor = "N/A"
+            delta_label = "Insufficient Data"
 
         st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
+            label=f'🌐 {country} Node Payload Volume',
+            value=f'{last_val:,}M Alerts',
+            delta=growth_factor,
+            delta_color="inverse"  # Red means a higher threat volume scaling up, perfect for cybersecurity tool UX
         )
